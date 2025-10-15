@@ -94,6 +94,10 @@ Capture at least one API response that clearly displays the entire personalized 
 
 ---
 
+## Reflection
+There are a lot of edge cases, and implementation can sometimes get a bit complicated. The most important one for me was validating the id because it affected, get, put, and delete, which is a large majority of the assignment. I isolated it into its own function to reduce code redundancies, and because it was reusable. I just made sure the id was valid: not a negative value, an integer value, did not exceed the size of the array of game objects.
+
+
 ## Academic Integrity Notice
 ⚠️ **Warning:** Submissions are reviewed for
 - Personalized additions that match your student ID rule set

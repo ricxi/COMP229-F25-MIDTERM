@@ -37,6 +37,21 @@ app.use(express.json());
 // Serve static files (e.g., images, CSS) from the "public" folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.param('id', (req, res, next, id) => {
+  const num = Number(req.params.id);
+  if (!Number.isInteger(num)) {
+    return res.status(400).json({ error: 'id must be an integer' });
+  }
+
+  if (id < 0) {
+    return res
+      .status(400)
+      .json({ error: 'id must be greater than or equal to zero' });
+  }
+
+  next();
+});
+
 // Array of game objects
 let games = [
   {
@@ -104,7 +119,6 @@ app.get('/', (req, res) => {
 // Description: Get all games
 // Task: Implement logic to return the full list of games
 app.get('/api/games', (req, res) => {
-  // TODO: Add logic to return all games
   res.status(200).json({
     games: games,
   });
@@ -114,46 +128,42 @@ app.get('/api/games', (req, res) => {
 // Description: Filter games by genre
 // Task: Implement logic to return games matching the specified genre
 app.get('/api/games/filter', (req, res) => {
-  // TODO: Add logic to filter games by genre
-  // Edge Cases:
-  // the "genre" query string does not exit
-  // the enter a game genre not in the system
-  // caplocks
-  // Edge Case for a filter that doesn't exit
-  // Capitalization
-
-  // If req.query exists
-  // If req.query.genre exists
-
   const gameGenre = req.query.genre;
 
-  if (gameGenre !== '') {
-    res.status(200).send({
-      games: games.filter(({ genre }) => genre === gameGenre),
+  if (!gameGenre || gameGenre === '') {
+    res.status(400).json({
+      error: 'query string empty or missing',
     });
+    return;
   }
+
+  const gamesByGenre = games.filter(({ genre }) => genre === gameGenre);
+  if (gamesByGenre.length === 0) {
+    res.status(404).json({
+      error: `no games exist for the genre: ${gameGenre}`,
+    });
+    return;
+  }
+
+  res.status(200).send({
+    games: games.filter(({ genre }) => genre === gameGenre),
+  });
 });
 
 // GET /api/games/:id
 // Description: Get a specific game by ID
 // Task: Implement logic to return a game by its index (ID)
 app.get('/api/games/:id', (req, res) => {
-  // TODO: Add logic to return a game by its index (ID)
-  // Edge Cases:
-  // What if the game id does not exist? Than the route is never traversed.
-  // What if it isn't a valid integer?
-  //
+  if (req.params.id > games.length - 1) {
+    res.status(404).json({
+      error: `game object does not exist for the id: ${req.params.id}`,
+    });
+    return;
+  }
 
-  // const gameId = req.params.id;
-  console.log(req.params);
   const gameObject = games[req.params.id];
-  // TODO: if it isn't an integer, than it is not a valid id
-  // TODO: if it is a negative number, than it isn't a valid id
-  // TODO: if it the integer exceeds the size of the array, than it doesn't exit.
-  console.log(gameObject);
 
   res.status(200).json({
-    // game: games[id],
     game: gameObject,
   });
 });
@@ -162,14 +172,7 @@ app.get('/api/games/:id', (req, res) => {
 // Description: Add a new game
 // Task: Implement logic to add a new game to the array
 app.post('/api/games', (req, res) => {
-  // TODO: Add logic to add a new game to the array
-  // TODO: Validate all fields.
-  // TODO: What if the game already exists?
-
-  console.log(req.body);
   games = [...games, req.body];
-  console.log('created');
-  console.log(games);
   res.status(201).json({
     games: games,
   });
@@ -179,24 +182,36 @@ app.post('/api/games', (req, res) => {
 // Description: Update a game by ID
 // Task: Implement logic to update a game by its index (ID)
 app.put('/api/games/:id', (req, res) => {
-  // TODO: Add logic to update a game by its index
+  if (req.params.id > games.length - 1) {
+    res.status(404).json({
+      error: `game object does not exist for the id: ${req.params.id}`,
+    });
+    return;
+  }
 
-  // ***************************************************************
-  // ***************************************************************
-  // ***************  Implement your code here  ********************
-  // ***************************************************************
-  // ***************************************************************
+  // console.log(req.params.id);
+  // const gameObject = games[req.params.id];
 
-  // Don't forget to remove the line below:
-  res.status(501).send('Not Implemented');
+  games = [
+    ...games.map((game, i) => (i == req.params.id ? { ...req.body } : game)),
+  ];
+  res.status(200).json({
+    games: games,
+  });
 });
 
 // DELETE /api/games/:id
 // Description: Remove a game by ID
 // Task: Implement logic to remove a game by its index (ID)
 app.delete('/api/games/:id', (req, res) => {
-  // validate id
-  games = games.filter((_, i) => gameId !== i);
+  if (req.params.id > games.length - 1) {
+    res.status(404).json({
+      error: `game object does not exist for the id: ${req.params.id}`,
+    });
+    return;
+  }
+
+  games = games.filter((_, i) => req.params.id != i);
 
   res.status(200).json({
     games: games,
