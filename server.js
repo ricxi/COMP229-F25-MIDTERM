@@ -28,7 +28,9 @@
  */
 
 const express = require('express');
+const { platform } = require('os');
 const path = require('path');
+const { title } = require('process');
 const app = express();
 app.use(express.json());
 
@@ -72,6 +74,20 @@ let games = [
     year: 2016,
     developer: 'ConcernedApe',
   },
+  {
+    title: 'The Legend of Zelda: Ocarina of Time',
+    genre: 'Adventure',
+    platform: 'Nintendo 64',
+    year: 1998,
+    developer: 'Nintendo',
+  },
+  {
+    title: 'Pokemon Red Version',
+    genre: 'Role-playing Game (RPG)',
+    platform: 'Game Boy',
+    year: 1996,
+    developer: 'Game Freak',
+  },
 ];
 
 // Set the port for the server
@@ -89,15 +105,9 @@ app.get('/', (req, res) => {
 // Task: Implement logic to return the full list of games
 app.get('/api/games', (req, res) => {
   // TODO: Add logic to return all games
-
-  // ***************************************************************
-  // ***************************************************************
-  // ***************  Implement your code here  ********************
-  // ***************************************************************
-  // ***************************************************************
-
-  // Don't forget to remove the line below:
-  res.status(501).send('Not Implemented');
+  res.status(200).json({
+    games: games,
+  });
 });
 
 // GET /api/games/filter?genre=[genre name]
@@ -105,15 +115,23 @@ app.get('/api/games', (req, res) => {
 // Task: Implement logic to return games matching the specified genre
 app.get('/api/games/filter', (req, res) => {
   // TODO: Add logic to filter games by genre
+  // Edge Cases:
+  // the "genre" query string does not exit
+  // the enter a game genre not in the system
+  // caplocks
+  // Edge Case for a filter that doesn't exit
+  // Capitalization
 
-  // ***************************************************************
-  // ***************************************************************
-  // ***************  Implement your code here  ********************
-  // ***************************************************************
-  // ***************************************************************
+  // If req.query exists
+  // If req.query.genre exists
 
-  // Don't forget to remove the line below:
-  res.status(501).send('Not Implemented');
+  const gameGenre = req.query.genre;
+
+  if (gameGenre !== '') {
+    res.status(200).send({
+      games: games.filter(({ genre }) => genre === gameGenre),
+    });
+  }
 });
 
 // GET /api/games/:id
@@ -121,15 +139,23 @@ app.get('/api/games/filter', (req, res) => {
 // Task: Implement logic to return a game by its index (ID)
 app.get('/api/games/:id', (req, res) => {
   // TODO: Add logic to return a game by its index (ID)
+  // Edge Cases:
+  // What if the game id does not exist? Than the route is never traversed.
+  // What if it isn't a valid integer?
+  //
 
-  // ***************************************************************
-  // ***************************************************************
-  // ***************  Implement your code here  ********************
-  // ***************************************************************
-  // ***************************************************************
+  // const gameId = req.params.id;
+  console.log(req.params);
+  const gameObject = games[req.params.id];
+  // TODO: if it isn't an integer, than it is not a valid id
+  // TODO: if it is a negative number, than it isn't a valid id
+  // TODO: if it the integer exceeds the size of the array, than it doesn't exit.
+  console.log(gameObject);
 
-  // Don't forget to remove the line below:
-  res.status(501).send('Not Implemented');
+  res.status(200).json({
+    // game: games[id],
+    game: gameObject,
+  });
 });
 
 // POST /api/games
@@ -137,15 +163,16 @@ app.get('/api/games/:id', (req, res) => {
 // Task: Implement logic to add a new game to the array
 app.post('/api/games', (req, res) => {
   // TODO: Add logic to add a new game to the array
+  // TODO: Validate all fields.
+  // TODO: What if the game already exists?
 
-  // ***************************************************************
-  // ***************************************************************
-  // ***************  Implement your code here  ********************
-  // ***************************************************************
-  // ***************************************************************
-
-  // Don't forget to remove the line below:
-  res.status(501).send('Not Implemented');
+  console.log(req.body);
+  games = [...games, req.body];
+  console.log('created');
+  console.log(games);
+  res.status(201).json({
+    games: games,
+  });
 });
 
 // PUT /api/games/:id
@@ -168,16 +195,12 @@ app.put('/api/games/:id', (req, res) => {
 // Description: Remove a game by ID
 // Task: Implement logic to remove a game by its index (ID)
 app.delete('/api/games/:id', (req, res) => {
-  // TODO: Add logic to remove a game by its index
+  // validate id
+  games = games.filter((_, i) => gameId !== i);
 
-  // ***************************************************************
-  // ***************************************************************
-  // ***************  Implement your code here  ********************
-  // ***************************************************************
-  // ***************************************************************
-
-  // Don't forget to remove the line below:
-  res.status(501).send('Not Implemented');
+  res.status(200).json({
+    games: games,
+  });
 });
 
 // Start the server
